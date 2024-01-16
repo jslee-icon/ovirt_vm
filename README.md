@@ -47,5 +47,5 @@ Before running the playbook, ensure the following prerequisites are met:
 Here is an example of how the playbook can be configured:
 
 ```bash
-ansible-playbook create_vm_instance.yml
+ansible-playbook ovirt_vm.yml
 
