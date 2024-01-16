@@ -1,0 +1,3 @@
+engine_url: https://{doamin}/ovirt-engine/api
+engine_user: ansible-user@internal
+engine_cafile: /etc/ansible/ovirt_vm/cert/ca.pem

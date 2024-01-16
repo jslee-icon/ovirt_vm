@@ -1,0 +1,99 @@
+---
+- name: ovirt ansible VM Deploy Instance
+  hosts: ovirtmgmt
+  gather_facts: false
+  serial: 5
+  connection: local
+  vars_prompt:
+    - name: "cluster_num"
+      prompt: "Enter cluster number (14, 17, 18, 19)"
+      private: no
+      default: "19"
+    - name: "start"
+      prompt: "Enter start value for sequence"
+      private: no
+      default: "1"
+    - name: "end"
+      prompt: "Enter end value for sequence"
+      private: no
+      default: "3"
+    - name: "vm_state"
+      prompt: "Enter VM state [running(create), present, absent(delete)]"
+      private: no
+      default: "running"
+    - name: "format_name"
+      prompt: "Enter the format name for the VM (e.g., ansible-vm-test)"
+      private: no
+      default: "ansible-ovirt"
+    - name: "memory"
+      prompt: "Enter memory size GiB for VM (e.g., 4)"
+      private: no
+      default: "4"
+    - name: "cpu_cores"
+      prompt: "Enter number of CPU cores for VM"
+      private: no
+      default: "2"
+  vars:
+    cluster_name: "LocalCluster{{ cluster_num }}"
+    template_name: "rocky8_{{ cluster_num }}"
+    storage_domain_name: "node9-datastore"
+    optimaze_type: server
+    os_type: "Other OS"
+    disk_format_type: "cow"
+
+  vars_files:
+    - vars/ovirt_password.yml
+    - vars/ovirt_config.yml
+
+  pre_tasks:
+    - name: Ovirt Auth (SSO)
+      ovirt_auth:
+        url: "{{ engine_url }}"
+        username: "{{ engine_user }}"
+        password: "{{ engine_password }}"
+        ca_file: "{{ engine_cafile }}"
+        insecure: yes
+      tags:
+        - always
+
+  tasks:
+    - name: create a vm instance
+      ovirt.ovirt.ovirt_vm:
+        auth: "{{ ovirt_auth }}"
+        state: "{{ vm_state }}"
+        delete_protected: no
+        name: "{{ item }}"
+        template: "{{ template_name }}"
+        disks:
+          - size: 30GiB
+            name_prefix: false
+            name: "{{ item }}"
+        memory: "{{ memory }}GiB"
+        cpu_cores: "{{ cpu_cores }}"
+        cpu_sockets: 1
+        #cpu_shares: 1024
+        type: server
+        cluster: "{{ cluster_name }}"
+        nics:
+          - name: nic1
+        cloud_init:
+          nic_name: eth1
+          nic_boot_protocol: dhcp
+          host_name: "{{ item }}"
+          user_name: root
+          root_password: P@ssw0rd
+      with_sequence: start="{{ start }}" end="{{ end }}" format="{{ format_name }}-%02d"
+      async: 600
+      poll: 0
+
+  post_tasks:
+    - name: Ovirt log out
+      ovirt_auth:
+        state: absent
+        ovirt_auth: "{{ ovirt_auth }}"
+      tags:
+        - always
+
+  collections:
+    - ovirt.ovirt.ovirt_vm
+

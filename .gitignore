@@ -1,0 +1,4 @@
+cert/
+old/
+vars/ovirt_config.yml
+vars/ovirt_password.yml
