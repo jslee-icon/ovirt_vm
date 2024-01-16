@@ -27,7 +27,7 @@ Before running the playbook, ensure the following prerequisites are met:
 3. Run the Ansible playbook:
 
     ```bash
-    ansible-playbook create_vm_instance.yml
+    ansible-playbook ovirt_vm.yml
     ```
 
 4. Follow the prompts to enter the desired configuration parameters.
