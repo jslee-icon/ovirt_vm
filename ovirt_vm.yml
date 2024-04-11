@@ -42,8 +42,8 @@
     disk_format_type: "cow"
 
   vars_files:
-    - vars/ovirt_password.yml
-    - vars/ovirt_config.yml
+    - vars/password.yml
+    - vars/config.yml
 
   pre_tasks:
     - name: Ovirt Auth (SSO)
